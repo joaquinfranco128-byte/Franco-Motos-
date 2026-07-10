@@ -104,9 +104,11 @@
       font-weight: 700;
       border: none;
       cursor: pointer;
-      transition: filter .2s ease,transform .05s ease;
+      transition: filter .2s ease,transform .1s ease-out;
       font-size: 0.95rem;
     }
+    .cta:hover { filter: brightness(1.1); }
+    .cta:active { transform: translateY(1px); }
     .burger {
       display: none;
       background: none;
@@ -242,8 +244,11 @@
     .products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
     @media (max-width: 980px){.products-grid{grid-template-columns:repeat(2,1fr)}}
     @media (max-width: 620px){.products-grid{grid-template-columns:1fr}}
-    .card{background:#121212;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:filter .2s ease;}
-    .card:hover{filter:brightness(1.1)}
+    .card{background:#121212;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:filter .25s ease-out,transform .25s ease-out,box-shadow .25s ease-out;}
+    .card:hover{filter:brightness(1.1);transform:translateY(-6px);box-shadow:0 12px 24px rgba(0,0,0,.35)}
+    .card:active{transform:translateY(-2px);transition-duration:.1s}
+    .card{opacity:0;transform:translateY(18px)}
+    .card.visible{opacity:1;transform:translateY(0);transition:filter .25s ease-out,transform .5s ease-out,box-shadow .25s ease-out,opacity .5s ease-out}
     .card .media{aspect-ratio:16/10;background:#0e0e0e;display:grid;place-items:center}
     .card .media img {width: 100%; height: 100%; object-fit: cover;}
     .card .body{padding:1rem;display:grid;gap:.4rem; min-height: 100px;}
@@ -268,8 +273,9 @@
     .catalogo-vacio{color:#2B2B2B;opacity:.75;padding:2rem 0;text-align:center}
 
     /* Compartir moto */
-    .btn-compartir{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--negro);border:1.5px solid rgba(0,0,0,.2);padding:.7rem 1.1rem;border-radius:.6rem;font-weight:700;cursor:pointer;transition:filter .2s ease}
+    .btn-compartir{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--negro);border:1.5px solid rgba(0,0,0,.2);padding:.7rem 1.1rem;border-radius:.6rem;font-weight:700;cursor:pointer;transition:filter .2s ease,transform .1s ease-out}
     .btn-compartir:hover{filter:brightness(.95);background:rgba(0,0,0,.03)}
+    .btn-compartir:active{transform:translateY(1px)}
     .ficha-actions{display:flex;gap:.7rem;flex-wrap:wrap}
 
     /* Mapa */
@@ -369,6 +375,12 @@
 
     /* Paginas ocultas */
     .pagina{display:none}
+    .pagina.entrando{animation:paginaEntra .4s ease-out both}
+    @keyframes paginaEntra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    /* Hero: efecto "Ken Burns" sutil en el slide activo */
+    .hero-slide.active img{animation:kenBurns 6s ease-in-out both}
+    @keyframes kenBurns{from{transform:scale(1)}to{transform:scale(1.06)}}
 
     /* Accesibilidad: foco visible */
     a:focus-visible, button:focus-visible, .card:focus-visible {
@@ -381,6 +393,9 @@
       html { scroll-behavior: auto; }
       .hero-slide { transition: none; }
       .btn-primary, .social-btn, .card { transition: none; }
+      .hero-slide.active img { animation: none; }
+      .pagina.entrando { animation: none; }
+      .card, .card.visible { opacity: 1; transform: none; transition: none; }
     }
   </style>
 </head>
@@ -734,8 +749,14 @@
 
   // Global functions
   function mostrarPagina(id) {
-    document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
-    document.getElementById(id).style.display = 'block';
+    document.querySelectorAll('.pagina').forEach(p => {
+      p.style.display = 'none';
+      p.classList.remove('entrando');
+    });
+    const pagina = document.getElementById(id);
+    pagina.style.display = 'block';
+    void pagina.offsetWidth; // fuerza reflow para que la animación se reinicie siempre
+    pagina.classList.add('entrando');
     closeMenu();
     window.scrollTo(0, 0);
     if (id === 'pagina-catalogo') {
@@ -866,10 +887,35 @@
     return card;
   }
 
+  // Efecto "aparecer" al hacer scroll: revela la tarjeta apenas entra en pantalla.
+  // Si el navegador no soporta IntersectionObserver, se muestra directo (sin animación).
+  const observerReveal = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entradas) => {
+        entradas.forEach(entrada => {
+          if (entrada.isIntersecting) {
+            entrada.target.classList.add('visible');
+            observerReveal.unobserve(entrada.target);
+          }
+        });
+      }, { threshold: 0.15 })
+    : null;
+
+  function revelarAlEntrarEnPantalla(el) {
+    if (observerReveal) {
+      observerReveal.observe(el);
+    } else {
+      el.classList.add('visible');
+    }
+  }
+
   function renderCatalogo(arr) {
     const grid = document.getElementById('catalogo-grid');
     grid.innerHTML = '';
-    arr.forEach(m => grid.appendChild(crearCardMoto(m)));
+    arr.forEach(m => {
+      const card = crearCardMoto(m);
+      grid.appendChild(card);
+      revelarAlEntrarEnPantalla(card);
+    });
   }
 
   // Destacados del home: se toman del mismo array `motos` (fuente única de verdad)
@@ -879,7 +925,11 @@
     const grid = document.getElementById('destacados-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    motos.filter(m => m.destacado).forEach(m => grid.appendChild(crearCardMoto(m)));
+    motos.filter(m => m.destacado).forEach(m => {
+      const card = crearCardMoto(m);
+      grid.appendChild(card);
+      revelarAlEntrarEnPantalla(card);
+    });
   }
 
   function aplicarFiltro() {
