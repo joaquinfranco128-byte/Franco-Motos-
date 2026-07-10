@@ -54,7 +54,7 @@
   <style>
     :root{
       --negro:#0B0B0B; --rojo:#E53935; --blanco:#FFFFFF; --gris:#F4F4F4; --gris-700:#2B2B2B;
-      --naranja-fuego:#FF4500; --celeste-fresco:#00CED1;
+      --naranja-fuego:#FF4500; --celeste-fresco:#00CED1; --dorado-financiacion:#FFC72C;
     }
     *,*::before,*::after{box-sizing:border-box}
     html{scroll-behavior:smooth}
@@ -258,10 +258,10 @@
     .badge{display:inline-block;padding:.2rem .5rem;border-radius:.4rem;font-size:.8rem}
     .badge.popular{color:var(--naranja-fuego);background:rgba(255,69,0,.10)} /* Naranja fuego con emoji 🔥; alpha bajo para contraste AA */
     .badge.nuevo{color:var(--celeste-fresco);background:rgba(0,206,209,.18)} /* Celeste fresco con emoji ✨ */
-    .badge-financiacion{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:800;letter-spacing:.2px;color:#111;background:#FFC72C;padding:.28rem .6rem;border-radius:999px;width:fit-content}
+    .badge.financiacion{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:800;letter-spacing:.2px;color:#111;background:var(--dorado-financiacion);padding:.28rem .6rem;border-radius:999px;width:fit-content}
     .price-row{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
     .price-anterior{color:rgba(255,255,255,.5);font-size:1rem;text-decoration:line-through}
-    .badge-oferta{color:var(--blanco);background:var(--rojo);font-weight:800;font-size:.75rem;padding:.2rem .5rem;border-radius:.4rem;letter-spacing:.3px}
+    .badge.oferta{color:var(--blanco);background:var(--rojo);font-weight:800;font-size:.75rem;padding:.2rem .5rem;border-radius:.4rem;letter-spacing:.3px}
     .ficha-details .price-anterior{color:rgba(43,43,43,.55)}
 
     /* Buscador de catálogo */
@@ -383,7 +383,8 @@
     @keyframes kenBurns{from{transform:scale(1)}to{transform:scale(1.06)}}
 
     /* Accesibilidad: foco visible */
-    a:focus-visible, button:focus-visible, .card:focus-visible {
+    a:focus-visible, button:focus-visible, .card:focus-visible,
+    input:focus-visible, select:focus-visible, textarea:focus-visible {
       outline: 2px solid var(--rojo);
       outline-offset: 2px;
     }
@@ -789,7 +790,7 @@
     const precioFmt = '$' + m.precio.toLocaleString('es-AR');
     if (m.precioAnterior && m.precioAnterior > m.precio) {
       const anteriorFmt = '$' + m.precioAnterior.toLocaleString('es-AR');
-      return `<div class="price-row"><span class="${claseBase}">${precioFmt}</span><span class="price-anterior">${anteriorFmt}</span><span class="badge-oferta">OFERTA</span></div>`;
+      return `<div class="price-row"><span class="${claseBase}">${precioFmt}</span><span class="visually-hidden">Precio anterior: </span><s class="price-anterior">${anteriorFmt}</s><span class="badge oferta">OFERTA</span></div>`;
     }
     return `<div class="${claseBase}">${precioFmt}</div>`;
   }
@@ -812,7 +813,7 @@
         <h2>${moto.nombre}</h2>
         <div class="color-buttons" style="display:flex;gap:0.5rem;">${buttonsHtml}</div>
         ${armarPrecioHtml(moto, 'price')}
-        <div class="badge-financiacion">💳 Apta para financiación</div>
+        <div class="badge financiacion">💳 Apta para financiación</div>
         ${moto.specs}
         <div class="ficha-actions">
           <button class="btn-primary" onclick="window.location.href='https://wa.me/5493489522711?text=${mensajeWa}';">Consultanos por Whatsapp</button>
@@ -871,7 +872,7 @@
           <div class="badge ${m.badge === 'Popular' ? 'popular' : m.badge === 'Nuevo' ? 'nuevo' : ''}">${m.badge === 'Popular' ? 'Popular 🔥' : m.badge === 'Nuevo' ? 'Nuevo ✨' : ''}</div>
         </div>
         ${armarPrecioHtml(m, 'price')}
-        <div class="badge-financiacion">💳 Apta para financiación</div>
+        <div class="badge financiacion">💳 Apta para financiación</div>
       </div>
     `;
     card.onclick = () => mostrarFicha(m.id);
