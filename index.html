@@ -253,6 +253,27 @@
     .badge{display:inline-block;padding:.2rem .5rem;border-radius:.4rem;font-size:.8rem}
     .badge.popular{color:var(--naranja-fuego);background:rgba(255,69,0,.10)} /* Naranja fuego con emoji 🔥; alpha bajo para contraste AA */
     .badge.nuevo{color:var(--celeste-fresco);background:rgba(0,206,209,.18)} /* Celeste fresco con emoji ✨ */
+    .badge-financiacion{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:800;letter-spacing:.2px;color:#111;background:#FFC72C;padding:.28rem .6rem;border-radius:999px;width:fit-content}
+    .price-row{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+    .price-anterior{color:rgba(255,255,255,.5);font-size:1rem;text-decoration:line-through}
+    .badge-oferta{color:var(--blanco);background:var(--rojo);font-weight:800;font-size:.75rem;padding:.2rem .5rem;border-radius:.4rem;letter-spacing:.3px}
+    .ficha-details .price-anterior{color:rgba(43,43,43,.55)}
+
+    /* Buscador de catálogo */
+    .catalogo-controles{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-bottom:1.4rem}
+    .buscador-wrap{position:relative;flex:1;min-width:220px}
+    .buscador-wrap svg{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);opacity:.5;pointer-events:none}
+    #buscador-catalogo{width:100%;padding:.6rem .8rem .6rem 2.3rem;border-radius:.6rem;border:1px solid rgba(0,0,0,.15);font:inherit;font-size:.95rem}
+    #filtro-catalogo{padding:.6rem .8rem;border-radius:.6rem;border:1px solid rgba(0,0,0,.15);font:inherit;font-size:.95rem}
+    .catalogo-vacio{color:#2B2B2B;opacity:.75;padding:2rem 0;text-align:center}
+
+    /* Compartir moto */
+    .btn-compartir{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--negro);border:1.5px solid rgba(0,0,0,.2);padding:.7rem 1.1rem;border-radius:.6rem;font-weight:700;cursor:pointer;transition:filter .2s ease}
+    .btn-compartir:hover{filter:brightness(.95);background:rgba(0,0,0,.03)}
+    .ficha-actions{display:flex;gap:.7rem;flex-wrap:wrap}
+
+    /* Mapa */
+    .mapa-contacto{border:0;width:100%;height:220px;border-radius:.6rem;margin-top:.6rem;filter:grayscale(.15)}
 
     /* Servicios */
     .services{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
@@ -443,6 +464,7 @@
         <p><a href="https://www.google.com/maps/search/?api=1&query=Jean+Jaures+827%2C+Campana%2C+Buenos+Aires" target="_blank" rel="noopener noreferrer">Jean Jaures 827, Campana, Buenos Aires</a></p>
         <p>Tel/WhatsApp: <a href="https://wa.me/5493489522711" target="_blank" rel="noopener noreferrer">+54 9 3489 522711</a></p>
         <p>Horarios: Lun a Vie 9:00 a 12:30 y 15:30 a 20:30, Sáb 9:00 a 12:30</p>
+        <iframe class="mapa-contacto" title="Ubicación de Franco Motos en el mapa" src="https://www.openstreetmap.org/export/embed.html?bbox=-58.9650%2C-34.1670%2C-58.9550%2C-34.1630&marker=-34.164998%2C-58.960031" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
       <div>
         <h4>Redes</h4>
@@ -481,13 +503,19 @@
   </header>
   <main class="container">
     <h2 class="section-title">Catálogo de Motos</h2>
-    <div style="margin-bottom:1rem">
-      <label for="filtro-catalogo">Ordenar por:</label>
-      <select id="filtro-catalogo" onchange="aplicarFiltro()">
-        <option value="precio-desc">Precio: mayor a menor</option>
-        <option value="precio-asc">Precio: menor a mayor</option>
-        <option value="mas-vendidos">Más vendidos</option>
-      </select>
+    <div class="catalogo-controles">
+      <div class="buscador-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2B2B2B" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="search" id="buscador-catalogo" placeholder="Buscar moto por nombre..." oninput="aplicarFiltro()" aria-label="Buscar moto por nombre">
+      </div>
+      <div>
+        <label for="filtro-catalogo" class="visually-hidden">Ordenar por</label>
+        <select id="filtro-catalogo" onchange="aplicarFiltro()">
+          <option value="precio-desc">Precio: mayor a menor</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="mas-vendidos">Más vendidos</option>
+        </select>
+      </div>
     </div>
     <div id="catalogo-grid" class="products-grid"></div>
   </main>
@@ -603,6 +631,9 @@
         <label>Precio (en pesos, sin puntos)
           <input type="number" id="f-precio" min="0" step="1" style="width:100%;padding:.6rem;border-radius:.5rem;border:1px solid #ccc">
         </label>
+        <label>Precio anterior — opcional, solo si está en oferta (queda tachado arriba del precio actual)
+          <input type="number" id="f-precio-anterior" min="0" step="1" placeholder="Dejar vacío si no hay oferta" style="width:100%;padding:.6rem;border-radius:.5rem;border:1px solid #ccc">
+        </label>
         <label>Ventas (solo se usa para ordenar "Más vendidos")
           <input type="number" id="f-vendidos" min="0" step="1" value="0" style="width:100%;padding:.6rem;border-radius:.5rem;border:1px solid #ccc">
         </label>
@@ -710,6 +741,44 @@
     if (id === 'pagina-catalogo') {
       aplicarFiltro(); // Renderiza respetando el orden seleccionado
     }
+    if (id === 'pagina-catalogo' || id === 'pagina-principal') {
+      // Limpia el hash (ej. de un link de "moto-xxx" compartido) al salir de la ficha
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }
+
+  // Arma el texto del mensaje de WhatsApp para consultar por una moto puntual
+  function armarMensajeWhatsapp(moto) {
+    return `Hola, vi la ${moto.nombre} en la web. ¿Me contás qué colores tienen en stock y qué opciones de pago/financiación manejan?`;
+  }
+
+  // Comparte el link directo a la ficha de una moto (Web Share API con fallback a copiar link)
+  function compartirMoto(id) {
+    const moto = motos.find(m => m.id === id);
+    if (!moto) return;
+    const url = window.location.origin + window.location.pathname + '#moto-' + encodeURIComponent(id);
+    const texto = `Mirá la ${moto.nombre} en Franco Motos`;
+    if (navigator.share) {
+      navigator.share({ title: moto.nombre, text: texto, url }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(
+        () => alert('Link copiado. Ya lo podés compartir.'),
+        () => prompt('Copiá este link para compartir:', url)
+      );
+    } else {
+      prompt('Copiá este link para compartir:', url);
+    }
+  }
+
+  // Arma el bloque de precio, con soporte para oferta (precio anterior tachado)
+  function armarPrecioHtml(m, claseBase) {
+    if (m.precio === 0) return `<div class="${claseBase}">Consultar</div>`;
+    const precioFmt = '$' + m.precio.toLocaleString('es-AR');
+    if (m.precioAnterior && m.precioAnterior > m.precio) {
+      const anteriorFmt = '$' + m.precioAnterior.toLocaleString('es-AR');
+      return `<div class="price-row"><span class="${claseBase}">${precioFmt}</span><span class="price-anterior">${anteriorFmt}</span><span class="badge-oferta">OFERTA</span></div>`;
+    }
+    return `<div class="${claseBase}">${precioFmt}</div>`;
   }
 
   // Feedback visual en selección de color
@@ -721,6 +790,7 @@
       const className = `${color}${isAvailable ? '' : ' unavailable'}`;
       return `<button class="${className}" onclick="changeColor('${id}', '${color}', this)" ${isAvailable ? '' : 'disabled'} aria-pressed="false" aria-label="Color ${color}"><span class="visually-hidden">${color}</span></button>`;
     }).join('');
+    const mensajeWa = encodeURIComponent(armarMensajeWhatsapp(moto));
     document.getElementById('ficha-detalle').innerHTML = `
       <div class="ficha-image">
         <img id="ficha-img-${id}" src="${moto.images[0]}" alt="${moto.nombre}" loading="lazy">
@@ -728,9 +798,13 @@
       <div class="ficha-details">
         <h2>${moto.nombre}</h2>
         <div class="color-buttons" style="display:flex;gap:0.5rem;">${buttonsHtml}</div>
-        <div class="price">$${moto.precio === 0 ? 'Consultar' : moto.precio.toLocaleString('es-AR')}</div>
+        ${armarPrecioHtml(moto, 'price')}
+        <div class="badge-financiacion">💳 Apta para financiación</div>
         ${moto.specs}
-        <button class="btn-primary" onclick="window.location.href='https://wa.me/5493489522711';">Consultanos por Whatsapp</button>
+        <div class="ficha-actions">
+          <button class="btn-primary" onclick="window.location.href='https://wa.me/5493489522711?text=${mensajeWa}';">Consultanos por Whatsapp</button>
+          <button class="btn-compartir" onclick="compartirMoto('${id}')" aria-label="Compartir esta moto">🔗 Compartir</button>
+        </div>
       </div>
     `;
     // Selecciona el primer color disponible
@@ -740,6 +814,7 @@
       colorBtns[0].setAttribute('aria-pressed', 'true');
     }
     mostrarPagina('pagina-ficha');
+    history.replaceState(null, '', '#moto-' + encodeURIComponent(id));
   }
 
   // Cambia la función changeColor para feedback visual
@@ -782,7 +857,8 @@
           <div class="name">${m.nombre}</div>
           <div class="badge ${m.badge === 'Popular' ? 'popular' : m.badge === 'Nuevo' ? 'nuevo' : ''}">${m.badge === 'Popular' ? 'Popular 🔥' : m.badge === 'Nuevo' ? 'Nuevo ✨' : ''}</div>
         </div>
-        <div class="price">$${m.precio === 0 ? 'Consultar' : m.precio.toLocaleString('es-AR')}</div>
+        ${armarPrecioHtml(m, 'price')}
+        <div class="badge-financiacion">💳 Apta para financiación</div>
       </div>
     `;
     card.onclick = () => mostrarFicha(m.id);
@@ -808,11 +884,19 @@
 
   function aplicarFiltro() {
     const val = document.getElementById('filtro-catalogo').value;
+    const busqueda = (document.getElementById('buscador-catalogo')?.value || '').trim().toLowerCase();
     let copia = [...motos];
+    if (busqueda) {
+      copia = copia.filter(m => m.nombre.toLowerCase().includes(busqueda));
+    }
     if(val==='precio-desc') copia.sort((a,b)=>b.precio-a.precio);
     if(val==='precio-asc') copia.sort((a,b)=>a.precio-b.precio);
     if(val==='mas-vendidos') copia.sort((a,b)=>b.vendidos-a.vendidos);
     renderCatalogo(copia);
+    const grid = document.getElementById('catalogo-grid');
+    if (!copia.length) {
+      grid.innerHTML = '<p class="catalogo-vacio">No encontramos motos que coincidan con tu búsqueda.</p>';
+    }
   }
 
   // Hero Slideshow
@@ -1130,8 +1214,15 @@
     }
     // El panel interno solo se muestra si se entra con la URL secreta (#panel-interno-fm).
     // No está linkeado en ningún lado del sitio público.
-    if (window.location.hash === '#panel-interno-fm') {
+    const hash = window.location.hash;
+    if (hash === '#panel-interno-fm') {
       mostrarPagina('pagina-admin');
+    } else if (hash.startsWith('#moto-')) {
+      // Deep-link de un link compartido (botón "Compartir" en una ficha)
+      const motoId = decodeURIComponent(hash.slice('#moto-'.length));
+      if (motos.some(m => m.id === motoId)) {
+        mostrarFicha(motoId);
+      }
     }
   });
 
@@ -1185,6 +1276,7 @@
     document.getElementById('f-nombre').value = '';
     document.getElementById('f-id').value = '';
     document.getElementById('f-precio').value = '';
+    document.getElementById('f-precio-anterior').value = '';
     document.getElementById('f-vendidos').value = 0;
     document.getElementById('f-badge').value = '';
     document.getElementById('f-destacado').checked = false;
@@ -1199,6 +1291,7 @@
     document.getElementById('f-nombre').value = m.nombre || '';
     document.getElementById('f-id').value = m.id || '';
     document.getElementById('f-precio').value = m.precio || 0;
+    document.getElementById('f-precio-anterior').value = m.precioAnterior || '';
     document.getElementById('f-vendidos').value = m.vendidos || 0;
     document.getElementById('f-badge').value = m.badge || '';
     document.getElementById('f-destacado').checked = !!m.destacado;
@@ -1234,6 +1327,7 @@
       id,
       nombre,
       precio: Number(document.getElementById('f-precio').value) || 0,
+      precioAnterior: Number(document.getElementById('f-precio-anterior').value) || undefined,
       badge: document.getElementById('f-badge').value || undefined,
       destacado: document.getElementById('f-destacado').checked || undefined,
       images: imgs,
@@ -1275,6 +1369,7 @@
         `      nombre: ${JSON.stringify(m.nombre)},`,
         `      precio: ${m.precio},`
       ];
+      if (m.precioAnterior) campos.push(`      precioAnterior: ${m.precioAnterior},`);
       if (m.badge) campos.push(`      badge: ${JSON.stringify(m.badge)},`);
       if (m.destacado) campos.push(`      destacado: true,`);
       campos.push(`      images: ${JSON.stringify(m.images)},`);
