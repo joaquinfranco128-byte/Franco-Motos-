@@ -615,15 +615,7 @@
     </div>
   </header>
   <main class="container" style="padding-block:2rem">
-    <div id="admin-login" style="max-width:360px;margin:0 auto;display:grid;gap:1rem">
-      <h2 class="section-title">Acceso interno</h2>
-      <p class="small" style="color:#2B2B2B">Esto no es un login real (no hay servidor): es solo una traba para que nadie entre sin querer. Cualquiera que vea el código fuente puede encontrar la clave.</p>
-      <input type="password" id="admin-pass" placeholder="Clave interna" style="padding:.7rem;border-radius:.5rem;border:1px solid #ccc" onkeydown="if(event.key==='Enter') intentarLoginAdmin()">
-      <button class="btn-primary" onclick="intentarLoginAdmin()">Ingresar</button>
-      <p id="admin-login-error" class="small" style="color:var(--rojo);display:none">Clave incorrecta.</p>
-    </div>
-
-    <div id="admin-panel" style="display:none">
+    <div id="admin-panel">
       <h2 class="section-title">Gestión de motos</h2>
       <p class="small" style="color:#2B2B2B;max-width:70ch">
         Este panel no guarda los cambios en la página en vivo. Edita acá, generá el código actualizado
@@ -1266,7 +1258,7 @@
     // No está linkeado en ningún lado del sitio público.
     const hash = window.location.hash;
     if (hash === '#panel-interno-fm') {
-      mostrarPagina('pagina-admin');
+      abrirPanelAdmin();
     } else if (hash.startsWith('#moto-')) {
       // Deep-link de un link compartido (botón "Compartir" en una ficha)
       const motoId = decodeURIComponent(hash.slice('#moto-'.length));
@@ -1279,22 +1271,17 @@
   // ============================================================
   // PANEL INTERNO (gestión de motos) — no es un backend real.
   // Genera el código para pegar en este mismo archivo y volver a subirlo.
-  // Cambiá esta clave por la que quieras editando la línea de abajo.
+  // Se accede solo con la URL secreta #panel-interno-fm (no está linkeada
+  // en el sitio público). No tiene clave: no hay nada que proteger, ya que
+  // el panel no puede modificar la página en vivo por sí solo.
   // ============================================================
-  const CLAVE_ADMIN = 'francomotos2026';
   let motosEditable = [];
 
-  function intentarLoginAdmin() {
-    const valor = document.getElementById('admin-pass').value;
-    if (valor === CLAVE_ADMIN) {
-      document.getElementById('admin-login').style.display = 'none';
-      document.getElementById('admin-panel').style.display = 'block';
-      motosEditable = JSON.parse(JSON.stringify(motos)); // copia de trabajo
-      refrescarSelectAdmin();
-      limpiarForm();
-    } else {
-      document.getElementById('admin-login-error').style.display = 'block';
-    }
+  function abrirPanelAdmin() {
+    mostrarPagina('pagina-admin');
+    motosEditable = JSON.parse(JSON.stringify(motos)); // copia de trabajo
+    refrescarSelectAdmin();
+    limpiarForm();
   }
 
   function refrescarSelectAdmin() {
